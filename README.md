@@ -61,6 +61,7 @@ Located in `src/`:
 | Script | Purpose | Example Usage |
 |--------|---------|---------------|
 | `sniffer/live_sniffer.py` | Captures live packets and displays raw bytes in hex and ASCII format. | `sudo python3 src/sniffer/live_sniffer.py` |
+| `sniffer/protocol_sniffer.py` | Captures raw packets and manually dissects Ethernet and ARP headers using byte offsets and `struct` unpacking. | `sudo python3 src/sniffer/protocol_sniffer.py` |
 
 **Dependencies:**
 - `scapy` – Install via `pip install scapy`.
@@ -72,6 +73,9 @@ Located in `src/`:
 ```bash
 # Run the live sniffer (requires root privileges)
 sudo python3 src/sniffer/live_sniffer.py
+
+# Run the manual Ethernet & ARP dissector (requires root privileges)
+sudo python3 src/sniffer/protocol_sniffer.py
 ```
 
 ---
@@ -91,6 +95,19 @@ Generate traffic to see packets:
 
 ```bash
 ping -c 5 google.com
+```
+
+### Ethernet & ARP Dissector
+
+```bash
+# Run the dissector (root privileges required)
+sudo python3 src/sniffer/protocol_sniffer.py
+```
+Generate ARP traffic to verify manual payload parsing:
+
+```bash
+sudo ip neigh flush all
+ping -c 3 10.0.2.2
 ```
 
 ---
