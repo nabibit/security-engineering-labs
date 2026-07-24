@@ -76,3 +76,37 @@ Building a manual packet dissector bridges the gap between high-level scripting 
   - `docs(ctf): add bandit level 15 writeup`
 
 ---
+
+## [2026-07-24] – Day 38: IPv4 Header Dissection
+
+### Concept
+- **IPv4 header structure (RFC 791):** Defines the minimum 20-byte IP header containing Version (4 bits), Internet Header Length / IHL (4 bits), Type of Service, Total Length, Identification, Flags, Fragment Offset, Time to Live (TTL), Protocol, Header Checksum, Source IP, and Destination IP.
+- **IHL math:** IHL represents the number of 32-bit words in the header; multiplying IHL by 4 yields the exact header length in bytes (standard minimum header size is $5 \times 4 = 20$ bytes).
+- **Transport protocols:** The 8-bit Protocol field identifies the higher-layer payload (e.g., `1` for ICMP, `6` for TCP, `17` for UDP).
+- **Network byte order unpacking:** Using Python's `struct.unpack('!B', ...)` and `!H` ensures multi-byte binary fields are read correctly from network order (big-endian).
+
+### Artifact
+- Created `src/protocols/ipv4.py` – a modular Python script that manually slices raw packet data to parse IPv4 header attributes and translate protocol IDs.
+- Integrated IPv4 parsing logic into the main packet sniffing framework, allowing simultaneous processing of Ethernet, ARP, and IPv4 frames.
+- Completed Cisco Linux Unhatched Modules 14.1-16.
+- Captured `docs/images/ipv4_dissection.png` showing the terminal output successfully extracting IPv4 fields (Version, IHL, Total Length, TTL, Protocol, Source/Dest IPs).
+
+### Key Observations
+- Standard IPv4 headers without options register an IHL of `5` ($5 \times 4 = 20$ bytes).
+- The protocol number accurately points to the payload type (e.g., protocol `17` for UDP traffic heading towards multicast/DNS endpoints).
+- Combining manual dissectors modularly (`src/protocols/`) keeps the codebase clean and separates raw byte-slicing logic from high-level capture orchestration.
+
+### Screenshot
+Below is a screenshot of the packet dissector capturing and parsing a live IPv4 packet:
+
+![IPv4 Dissection](images/ipv4_dissection.png)
+
+### Reflection
+Moving from Layer 2 (Ethernet/ARP) up to Layer 3 (IPv4) solidifies the concept of encapsulation. Watching raw bytes transform into structured metrics—like tracking a packet's TTL or identifying transport protocols through byte-offset math—bridges foundational RFC theory with practical security engineering. Overcoming Bandit Level 18 reinforced non-interactive SSH tricks, while the Linux and OSI theory work completed the loop for infrastructure fundamentals.
+
+### Evidence
+- **Commits:**
+  - `docs: add IPv4 header protocol notes`
+  - `feat: add IPv4 header dissector`
+
+---
