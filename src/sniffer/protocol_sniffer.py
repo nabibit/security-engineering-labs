@@ -2,10 +2,16 @@
 # Project: security-engineering-labs
 # Purpose: Ethernet and ARP packet dissector – manually parse headers using byte offsets.
 # Created: 2026-07-22
+# Updated: 2026-07-24
 
 import scapy.all as scapy
 import struct
 import time
+import sys
+import os
+# Append the parent directory to python path for internal module resolution
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from protocols.ipv4 import dissect_ipv4, protocol_to_str
 
 # Ethernet Header Offsets
 # Ethernet header is exactly 14 bytes: 6 for Dest MAC, 6 for Src MAC, 2 for EtherType
@@ -109,6 +115,21 @@ def packet_callback(packet):
     print(f"      Dest MAC: {dst_mac}")
     print(f"      Src MAC:  {src_mac}")
     print(f"      EtherType: 0x{ethertype:04x}")
+
+    # Check if it's an IPv4 packet
+    if ethertype == ETH_TYPE_IPV4:
+        print(f"    IPv4 Packet:")
+        try:
+            ipv4_data = dissect_ipv4(payload)
+            print(f"      Version: {ipv4_data['version']}")
+            print(f"      IHL: {ipv4_data['ihl']} ({ipv4_data['header_len']} bytes)")
+            print(f"      Total Length: {ipv4_data['total_len']} bytes")
+            print(f"      TTL: {ipv4_data['ttl']}")
+            print(f"      Protocol: {ipv4_data['protocol']} ({protocol_to_str(ipv4_data['protocol'])})")
+            print(f"      Source IP: {ipv4_data['src_ip']}")
+            print(f"      Dest IP: {ipv4_data['dest_ip']}")
+        except Exception as e:
+            print(f"      [Error parsing IPv4: {e}]")
 
     # 2. Check if it's an ARP packet and parse payload
     if ethertype == ETH_TYPE_ARP:
