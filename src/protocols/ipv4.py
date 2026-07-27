@@ -2,6 +2,7 @@
 # Project: security-engineering-labs
 # Purpose: IPv4 header dissector – manually parse IPv4 headers (RFC 791) using byte offsets.
 # Created: 2026-07-24
+# Updated: 2026-07-27 (Added get_payload_offset helper function for Layer 4 slicing)
 
 import struct
 import socket
@@ -63,6 +64,12 @@ def protocol_to_str(protocol: int) -> str:
         89: 'OSPF',
     }
     return protocols.get(protocol, f'Unknown({protocol})')
+
+def get_payload_offset(raw_bytes: bytes) -> int:
+    """Calculate and return the exact byte offset where the upper-layer payload begins."""
+    version_ihl = struct.unpack('!B', raw_bytes[0:1])[0]
+    ihl = version_ihl & 0x0F
+    return ihl * 4
 
 if __name__ == "__main__":
     print("IPv4 dissector module – import and use inside packet_dissector.py")

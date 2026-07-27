@@ -2,7 +2,7 @@
 # Project: security-engineering-labs
 # Purpose: Ethernet and ARP packet dissector – manually parse headers using byte offsets.
 # Created: 2026-07-22
-# Updated: 2026-07-24
+# Updated: 2026-07-27 (Integrated UDP and ICMP transport/control layer demultiplexing)
 
 import scapy.all as scapy
 import struct
@@ -11,7 +11,9 @@ import sys
 import os
 # Append the parent directory to python path for internal module resolution
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from protocols.ipv4 import dissect_ipv4, protocol_to_str
+from protocols.ipv4 import dissect_ipv4, protocol_to_str, get_payload_offset
+from protocols.udp import dissect_udp, port_to_service
+from protocols.icmp import dissect_icmp, icmp_type_to_str
 
 # Ethernet Header Offsets
 # Ethernet header is exactly 14 bytes: 6 for Dest MAC, 6 for Src MAC, 2 for EtherType
@@ -109,7 +111,7 @@ def packet_callback(packet):
     print(f"\n[+] Packet captured at {time.strftime('%H:%M:%S')}")
     print(f"    Raw length: {len(raw_bytes)} bytes")
 
-    # 1. Parse Ethernet header
+    # Parse Ethernet header
     dst_mac, src_mac, ethertype, payload = parse_ethernet(raw_bytes)
     print(f"    Ethernet:")
     print(f"      Dest MAC: {dst_mac}")
@@ -131,7 +133,36 @@ def packet_callback(packet):
         except Exception as e:
             print(f"      [Error parsing IPv4: {e}]")
 
-    # 2. Check if it's an ARP packet and parse payload
+    # Extract the transport layer payload based on dynamic IPv4 header length
+        payload_offset = get_payload_offset(payload)
+        transport_payload = payload[payload_offset:]
+
+        # Demultiplex transport protocols based on IPv4 protocol ID
+        if ipv4_data['protocol'] == 17:  # Protocol 17 = UDP
+            print(f"    UDP Packet:")
+            try:
+                udp_data = dissect_udp(transport_payload)
+                print(f"      Source Port: {udp_data['src_port']} ({port_to_service(udp_data['src_port'])})")
+                print(f"      Dest Port:   {udp_data['dest_port']} ({port_to_service(udp_data['dest_port'])})")
+                print(f"      Length:      {udp_data['length']} bytes")
+                print(f"      Checksum:    0x{udp_data['checksum']:04x}")
+            except Exception as e:
+                print(f"      [Error parsing UDP: {e}]")
+
+        elif ipv4_data['protocol'] == 1:  # Protocol 1 = ICMP
+            print(f"    ICMP Packet:")
+            try:
+                icmp_data = dissect_icmp(transport_payload)
+                print(f"      Type:     {icmp_data['type']} ({icmp_type_to_str(icmp_data['type'])})")
+                print(f"      Code:     {icmp_data['code']}")
+                print(f"      Checksum: 0x{icmp_data['checksum']:04x}")
+            except Exception as e:
+                print(f"      [Error parsing ICMP: {e}]")
+
+        else:
+            print(f"    (Transport Protocol {ipv4_data['protocol']} not dissected yet)")
+
+    #  Check if it's an ARP packet and parse payload
     if ethertype == ETH_TYPE_ARP:
         print(f"    ARP Packet:")
         arp_data = parse_arp(payload)
