@@ -77,3 +77,27 @@ Understanding the IPv4 header is essential for:
 - **Packet filtering:** Firewalls inspect protocol/port fields.
 - **Troubleshooting:** TTL tells you how many hops a packet took.
 - **Security:** Detecting malformed packets, fragmentation attacks.
+
+## UDP Header (RFC 768)
+
+| Offset | Field | Size (bytes) | Description |
+|--------|-------|--------------|-------------|
+| 0-1    | Source Port | 2 | Sending port (0 = none) |
+| 2-3    | Destination Port | 2 | Receiving port |
+| 4-5    | Length | 2 | UDP header + payload (minimum 8) |
+| 6-7    | Checksum | 2 | Optional (0 = none) |
+
+## ICMP Header (RFC 792)
+
+| Offset | Field | Size (bytes) | Description |
+|--------|-------|--------------|-------------|
+| 0      | Type | 1 | 8 = Echo Request, 0 = Echo Reply |
+| 1      | Code | 1 | Sub-type (usually 0) |
+| 2-3    | Checksum | 2 | Error detection |
+| 4-...  | Payload | variable | Varies by type (e.g., identifier, sequence) |
+
+### Common ICMP Types
+- `0` – Echo Reply (ping response)
+- `3` – Destination Unreachable
+- `8` – Echo Request (ping)
+- `11` – Time Exceeded (traceroute)
