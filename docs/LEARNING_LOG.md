@@ -110,3 +110,39 @@ Moving from Layer 2 (Ethernet/ARP) up to Layer 3 (IPv4) solidifies the concept o
   - `feat: add IPv4 header dissector`
 
 ---
+
+## [2026-07-27] – Day 39: UDP & ICMP Dissection
+
+### Concept
+- **UDP Header Structure (RFC 768):** A minimalist, connectionless transport layer protocol consisting of an 8-byte header: Source Port (2 bytes), Destination Port (2 bytes), Length (2 bytes), and Checksum (2 bytes).
+- **ICMP Header Structure (RFC 792):** An essential network control and diagnostic protocol. The mandatory 4-byte base header contains Type (1 byte), Code (1 byte), and Checksum (2 bytes), followed by variable payload data depending on the message type.
+- **Demultiplexing / Protocol Routing:** The IPv4 header's 8-bit `Protocol` field acts as the routing switch for incoming payloads: value `17` directs bytes to the UDP parser, while value `1` routes to the ICMP parser.
+- **Port Mapping:** Mapping 16-bit integer port numbers (e.g., `53` to DNS, `123` to NTP) to standard human-readable services provides immediate contextual awareness during traffic analysis.
+
+### Artifact
+- Created `src/protocols/udp.py` – a standalone Python module utilizing `struct.unpack('!H', ...)` to extract 16-bit UDP header fields and resolve network service names.
+- Created `src/protocols/icmp.py` – a standalone module that extracts ICMP types/codes and maps standard diagnostic messages (e.g., Type `8` for Echo Request, Type `0` for Echo Reply, Type `3` for Destination Unreachable).
+- Updated `src/protocols/ipv4.py` by adding `get_payload_offset()` to calculate dynamic IPv4 header lengths ($IHL \times 4$), ensuring exact byte boundaries when slicing transport layer payloads.
+- Integrated both UDP and ICMP parsers into `src/sniffer/protocol_sniffer.py`, enabling live, multi-layer encapsulation decoding (Ethernet $\rightarrow$ IPv4 $\rightarrow$ UDP/ICMP).
+- Completed Cisco Linux Unhatched Modules 17–20, advancing my command-line administration and system configuration capabilities.
+- Completed OverTheWire Bandit Level 17, documenting the solution and key takeaways in my CTF repository.
+- Captured `docs/images/udp_icmp_dissection.png` showing the live dissector successfully isolating and decoding NTP queries (UDP Port 123) and ICMP Echo Reply packets in real-time.
+
+### Key Observations
+- UDP's 8-byte fixed header imposes minimal overhead compared to TCP, making it highly efficient for stateless services like NTP (Network Time Protocol on port 123) and DNS.
+- When parsing ICMP packets generated via network activity, the dissector clearly identifies incoming Type `0` (Echo Reply) packets from external routers.
+- Relying on dynamic offset calculations (`ihl * 4`) rather than assuming a static 20-byte IPv4 header prevents byte-misalignment errors when slicing the payload for upper-layer protocols.
+
+### Screenshot
+Below is a screenshot of the manual dissector capturing and parsing live UDP (NTP) and ICMP (Echo Reply) traffic:
+
+![UDP and ICMP Dissection](images/udp_icmp_dissection.png)
+
+### Reflection
+Implementing Layer 4 (UDP) and Layer 3.5 control protocols (ICMP) completes a functional, multi-layer network analysis tool. Writing the demultiplexing logic—where the IPv4 protocol field acts as a traffic controller handing off byte arrays to specialized parsers—mirrors how actual kernel network stacks operate. Seeing raw hexadecimal bytes transform live into structured NTP port mappings and ICMP diagnostic codes solidifies my understanding of network encapsulation and RFC standards. Combining this systems programming work with Linux Modules 17–20 and Bandit Level 17 continues to strengthen my foundational cybersecurity skill set.
+
+### Evidence
+- **Commits:**
+  - `docs: add UDP and ICMP protocol notes`
+  - `feat: add UDP and ICMP dissectors`
+  - `docs(ctf): add bandit level 17 writeup`

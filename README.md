@@ -63,6 +63,8 @@ Located in `src/`:
 | `sniffer/live_sniffer.py` | Captures live packets and displays raw bytes in hex and ASCII format. | `sudo python3 src/sniffer/live_sniffer.py` |
 | `sniffer/protocol_sniffer.py` | Captures raw packets and manually dissects Ethernet and ARP headers using byte offsets and `struct` unpacking. | `sudo python3 src/sniffer/protocol_sniffer.py` |
 | `protocols/ipv4.py` | Manually dissects RFC 791 IPv4 headers (version, IHL, TTL, protocol, source/dest IP). | *Imported and run via `protocol_sniffer.py`* |
+| `protocols/udp.py` | Manually dissects RFC 768 UDP headers (source/dest ports, length, checksum) and maps services. | *Imported and run via `protocol_sniffer.py`* |
+| `protocols/icmp.py` | Manually dissects RFC 792 ICMP headers (type, code, checksum) and identifies message types. | *Imported and run via `protocol_sniffer.py`* |
 
 **Dependencies:**
 - `scapy` – Install via `pip install scapy`.
@@ -127,6 +129,22 @@ ping -c 3 10.0.2.2
 
 # For IPv4 testing:
 ping -c 3 google.com
+```
+
+### UDP & ICMP Dissectors
+
+```bash
+# Run the dissector (root privileges required)
+sudo python3 src/sniffer/protocol_sniffer.py
+```
+Generate traffic to verify manual Layer 4 and control protocol parsing:
+
+```bash 
+# For ICMP (Echo Request / Reply) testing:
+ping -c 3 8.8.8.8
+
+# For UDP (DNS query on port 53 or NTP on port 123) testing:
+dig @8.8.8.8 google.com
 ```
 
 ---
