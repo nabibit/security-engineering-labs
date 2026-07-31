@@ -146,3 +146,40 @@ Implementing Layer 4 (UDP) and Layer 3.5 control protocols (ICMP) completes a fu
   - `docs: add UDP and ICMP protocol notes`
   - `feat: add UDP and ICMP dissectors`
   - `docs(ctf): add bandit level 17 writeup`
+---
+
+## [2026-07-31] – Day 40: Crafting Custom Packets
+
+### Concept
+- **Scapy packet crafting:** Utilizing the `/` operator to stack protocol layers seamlessly (e.g., `Ether()/IP()/ICMP()`).
+- **Network Transmission Functions:** Differentiating between `send()` (transmits at Layer 3 without awaiting a reply), `sr1()` (sends and waits for exactly one reply), and `sr()` (sends and waits for all replies).
+- **Manual Checksum Calculation:** Understanding that the ICMP checksum is derived from the 16-bit one's complement of the one's complement sum of the ICMP header and data, requiring the checksum field to be zeroed out prior to calculation.
+- **Raw Packet Construction:** Shifting from passive dissection to active packet generation by manually calculating header fields and structuring byte arrays.
+
+### Artifact
+- Created `src/sniffer/custom_packet.py` – an advanced Python script that:
+  - Constructs custom ICMP Echo Request packets from scratch, incorporating manual checksum validation.
+  - Allows precise customization of the ICMP ID, sequence number, and underlying data payload.
+  - Leverages Scapy's `sr1()` function to transmit the crafted packets and capture incoming replies.
+  - Processes command-line arguments to dictate the destination IP and request count.
+- Completed OverTheWire Bandit Level 18 (SSH with command execution) and added the write-up.
+
+### Key Observations
+- Scapy's `/` operator significantly abstracts the complexity of encapsulation, making packet construction highly readable and intuitive.
+- The `sr1()` function is perfectly suited for ping-like operations where a 1:1 request-to-response mapping is expected.
+- Implementing the manual checksum calculation forced a deeper understanding of RFC 792; if the checksum is incorrectly calculated, the target OS drops the packet silently.
+- Injecting custom payloads into ICMP packets acts as a proof-of-concept for testing firewall rules or demonstrating data exfiltration vectors.
+
+### Screenshots
+Below is a screenshot of the custom packet script output demonstrating successful transmission and response capture:
+
+![Custom Packet Output](images/custom_packet_output.png)
+
+### Reflection
+Transitioning from packet analysis to active packet crafting bridges the gap between understanding protocol headers and manipulating them defensively/offensively. The manual checksum calculation was a particularly rigorous exercise—it stripped away the "magic" of high-level libraries and exposed exactly how ICMP packets are validated by the receiving network stack. Utilizing Scapy's `sr1()` completed the transmission cycle seamlessly. This lab highlighted the true power of Scapy for security assessments: the ability to forge explicit, non-standard packets to observe how target systems respond.
+
+### Evidence
+- **Commits:**
+    - `feat: add custom ICMP Echo Request packet crafting`
+    - `docs: add bandit level 18 writeup` (CTF repo)
+

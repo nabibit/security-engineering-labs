@@ -62,6 +62,7 @@ Located in `src/`:
 |--------|---------|---------------|
 | `sniffer/live_sniffer.py` | Captures live packets and displays raw bytes in hex and ASCII format. | `sudo python3 src/sniffer/live_sniffer.py` |
 | `sniffer/protocol_sniffer.py` | Captures raw packets and manually dissects Ethernet and ARP headers using byte offsets and `struct` unpacking. | `sudo python3 src/sniffer/protocol_sniffer.py` |
+| `sniffer/custom_packet.py` | Crafts custom ICMP Echo Request packets with manual checksum calculation. | `sudo python3 src/sniffer/custom_packet.py 8.8.8.8 3` |
 | `protocols/ipv4.py` | Manually dissects RFC 791 IPv4 headers (version, IHL, TTL, protocol, source/dest IP). | *Imported and run via `protocol_sniffer.py`* |
 | `protocols/udp.py` | Manually dissects RFC 768 UDP headers (source/dest ports, length, checksum) and maps services. | *Imported and run via `protocol_sniffer.py`* |
 | `protocols/icmp.py` | Manually dissects RFC 792 ICMP headers (type, code, checksum) and identifies message types. | *Imported and run via `protocol_sniffer.py`* |
@@ -145,6 +146,13 @@ ping -c 3 8.8.8.8
 
 # For UDP (DNS query on port 53 or NTP on port 123) testing:
 dig @8.8.8.8 google.com
+```
+### Custom Packet Crafting
+Build and send custom ICMP Echo Request packets with manual checksum calculation.
+
+```bash
+# Send 3 custom pings to 8.8.8.8
+sudo python3 src/sniffer/custom_packet.py 8.8.8.8 3
 ```
 
 ---
