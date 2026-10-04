@@ -66,6 +66,7 @@ Located in `src/`:
 | `protocols/ipv4.py` | Manually dissects RFC 791 IPv4 headers (version, IHL, TTL, protocol, source/dest IP). | *Imported and run via `protocol_sniffer.py`* |
 | `protocols/udp.py` | Manually dissects RFC 768 UDP headers (source/dest ports, length, checksum) and maps services. | *Imported and run via `protocol_sniffer.py`* |
 | `protocols/icmp.py` | Manually dissects RFC 792 ICMP headers (type, code, checksum) and identifies message types. | *Imported and run via `protocol_sniffer.py`* |
+| `protocols/tcp.py` | Manually dissects RFC 793 TCP headers (ports, sequence/ack numbers, flags, window, checksum) and maps common services. | *Imported and run via `protocol_sniffer.py` (integration pending)* |
 
 **Dependencies:**
 - `scapy` – Install via `pip install scapy`.
@@ -147,6 +148,27 @@ ping -c 3 8.8.8.8
 # For UDP (DNS query on port 53 or NTP on port 123) testing:
 dig @8.8.8.8 google.com
 ```
+
+### TCP Dissector (Module-Level Test)
+
+TCP dissection is currently available as a standalone module. Direct testing verifies the parser without requiring live integration:
+
+```bash
+# Run from the repository root
+python3 -c "
+from src.protocols.tcp import dissect_tcp
+
+# Simulated TCP SYN packet header (20 bytes)
+# Src Port 54321, Dst Port 80, Seq 0, Ack 0, Data Offset 5, Flags SYN, Window 65535
+header = bytes.fromhex('d431005000000000000000005002ffff00000000')
+result = dissect_tcp(header)
+print('Source Port:', result['src_port'])
+print('Dest Port:  ', result['dest_port'], '(HTTP)')
+print('Flags:      ', result['flag_names'])
+print('Header Len: ', result['header_len'], 'bytes')
+"
+```
+
 ### Custom Packet Crafting
 Build and send custom ICMP Echo Request packets with manual checksum calculation.
 

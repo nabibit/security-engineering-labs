@@ -182,4 +182,32 @@ Transitioning from packet analysis to active packet crafting bridges the gap bet
 - **Commits:**
     - `feat: add custom ICMP Echo Request packet crafting`
     - `docs: add bandit level 18 writeup` (CTF repo)
+---
 
+## [2026-10-04] – Day 41: TCP Header Dissection (Part 1)
+
+### Concept
+- **TCP header structure (RFC 793):** Minimum 20-byte header containing Source Port, Destination Port, Sequence Number, Acknowledgment Number, Data Offset, Flags, Window Size, Checksum, Urgent Pointer, and optional Options.
+- **Data Offset:** High 4 bits of byte 12 – multiplied by 4 gives the actual header length in bytes (allows for variable-length options).
+- **TCP flags:** 9 control bits (NS, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN) used for connection management and flow control.
+- **TCP vs UDP:** TCP's 20+ byte header vs UDP's fixed 8 bytes – more overhead but provides reliability, ordering, and connection state.
+
+### Artifact
+- Added TCP header structure and flag values to `docs/PROTOCOL_NOTES.md`.
+- Created `src/protocols/tcp.py` – a Python module that manually parses TCP headers using `struct.unpack()`, extracts all fields, decodes flag names, and calculates the payload offset.
+- Tested module import successfully.
+
+### Key Observations
+- The Data Offset field is essential – TCP headers can be longer than 20 bytes if options are present.
+- Flags are bit-packed into a single byte (plus 1 bit), requiring bitwise AND to decode.
+- TCP port mapping allows quick identification of services (HTTP, SSH, HTTPS, etc.).
+- Manual parsing reinforces the importance of byte-order (`!` for network/big-endian).
+
+### Reflection
+TCP is the most complex transport protocol I've dissected so far. Unlike UDP's fixed 8-byte header, TCP has variable-length options, bit-packed flags, and state-tracking fields (sequence/acknowledgment numbers). Building the dissector manually makes the abstraction disappear – I now understand exactly where each byte sits and why. Next session will integrate TCP into the packet dissector and capture a live three-way handshake.
+
+### Evidence
+- **Commits:**
+  - `docs: add TCP header protocol notes`
+  - `feat: add TCP header dissector`
+---
