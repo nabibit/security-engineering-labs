@@ -101,3 +101,41 @@ Understanding the IPv4 header is essential for:
 - `3` – Destination Unreachable
 - `8` – Echo Request (ping)
 - `11` – Time Exceeded (traceroute)
+
+## TCP Header (RFC 793)
+
+| Offset | Field | Size (bytes) | Description |
+|--------|-------|--------------|-------------|
+| 0-1    | Source Port | 2 | Sender's port |
+| 2-3    | Destination Port | 2 | Receiver's port |
+| 4-7    | Sequence Number | 4 | Position of first data byte |
+| 8-11   | Acknowledgment Number | 4 | Next expected byte |
+| 12     | Data Offset (4 bits) | - | Header length in 32-bit words (×4 = bytes) |
+| 12     | Reserved (3 bits) | - | Must be 0 |
+| 12-13  | Flags (9 bits) | - | NS, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN |
+| 14-15  | Window Size | 2 | Receive window size |
+| 16-17  | Checksum | 2 | Error detection |
+| 18-19  | Urgent Pointer | 2 | Offset for urgent data |
+| 20-... | Options | variable | Optional (MSS, window scaling, SACK) |
+
+### TCP Flags (bit values)
+- `FIN` – 0x01 – No more data from sender
+- `SYN` – 0x02 – Synchronize sequence numbers
+- `RST` – 0x04 – Reset connection
+- `PSH` – 0x08 – Push buffered data
+- `ACK` – 0x10 – Acknowledgment field is valid
+- `URG` – 0x20 – Urgent pointer field is valid
+- `ECE` – 0x40 – ECN Echo
+- `CWR` – 0x80 – Congestion Window Reduced
+
+### Common TCP Ports
+- `20/21` – FTP
+- `22` – SSH
+- `23` – Telnet
+- `25` – SMTP
+- `80` – HTTP
+- `110` – POP3
+- `143` – IMAP
+- `443` – HTTPS
+- `3306` – MySQL
+- `3389` – RDP
